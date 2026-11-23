@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Temporizador de Eventos</title>
+<meta name="description" content="Painel de controle de cronômetros para palco, palestras e eventos.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/tela.css">
+<link rel="stylesheet" href="css/painel.css">
+</head>
+<body>
+
+<header class="app-bar">
+  <div class="app-id">
+    <div class="app-logo" data-icon="timer"></div>
+    <div style="min-width:0">
+      <h1 id="hTitle">Temporizador de Eventos</h1>
+      <span class="lbl">Painel de controle</span>
+    </div>
+  </div>
+  <div class="app-actions">
+    <button class="btn" id="bWin" data-icon="monitor">Tela do palestrante</button>
+    <button class="btn" id="bFull" data-icon="expand">Tela cheia</button>
+    <button class="btn" id="bCfg" data-icon="settings">Configurações</button>
+  </div>
+</header>
+
+<div class="alert" id="warnMulti" hidden>Outro painel de controle está aberto neste navegador. Use só um, senão as alterações de um sobrescrevem as do outro.</div>
+
+<main class="layout">
+  <!-- Coluna principal: prévia, controles e mensagem -->
+  <section class="col">
+    <div class="preview scr-host" id="preview"></div>
+
+    <div class="card transport">
+      <div class="tp-now">
+        <div class="eyebrow" id="tpPos">Item</div>
+        <div class="tp-name" id="tpName"></div>
+      </div>
+      <div class="tp-btns">
+        <button class="btn" id="bPrev" title="Anterior (←)" data-icon="prev"></button>
+        <button class="btn" id="bMinus" title="Tirar 1 minuto">−1 min</button>
+        <button class="btn primary lg" id="bToggle" title="Iniciar / pausar (espaço)"></button>
+        <button class="btn" id="bPlus" title="Adicionar 1 minuto">+1 min</button>
+        <button class="btn" id="bReset" title="Reiniciar este timer" data-icon="reset"></button>
+        <button class="btn" id="bNext" title="Próximo (→)" data-icon="next"></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><h2>Mensagem para o palestrante</h2></div>
+      <div class="card-bd">
+        <div class="msg-row">
+          <input class="inp" id="msgIn" placeholder="Digite e pressione Enter">
+          <button class="btn primary" id="bSend" data-icon="send">Enviar</button>
+          <button class="btn" id="bClr">Limpar</button>
+        </div>
+        <div class="chips">
+          <button class="chip" type="button">Faltam 5 minutos</button>
+          <button class="chip" type="button">Faltam 2 minutos</button>
+          <button class="chip" type="button">Por favor, encerre</button>
+          <button class="chip" type="button">Abrir para perguntas</button>
+          <button class="chip" type="button">Fale mais perto do microfone</button>
+        </div>
+        <div class="msg-live" id="msgLive" hidden><span class="dot"></span>Na tela agora: <strong id="msgLiveTx"></strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coluna lateral: programação -->
+  <aside class="col">
+    <div class="card">
+      <div class="card-hd">
+        <h2>Programação <span class="lbl" id="count"></span></h2>
+        <button class="btn ghost" id="bResetAll" data-icon="reset">Reiniciar todos</button>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="add">
+        <input class="inp" id="nName" placeholder="Novo timer (ex.: Abertura)">
+        <input class="inp num" id="nMin" type="number" min="0" value="10" aria-label="Minutos"><span class="lbl">min</span>
+        <input class="inp num" id="nSec" type="number" min="0" max="59" value="0" aria-label="Segundos"><span class="lbl">seg</span>
+        <button class="btn primary" id="bAdd" data-icon="plus">Adicionar</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<p class="hint">
+  Atalhos: <kbd>Espaço</kbd> inicia/pausa · <kbd>→</kbd> ou <kbd>Page Down</kbd> próximo · <kbd>←</kbd> ou <kbd>Page Up</kbd> anterior.
+  A tela do palestrante acompanha este painel em tempo real quando aberta no mesmo navegador e computador.
+</p>
+
+<!-- Configurações do evento -->
+<dialog class="cfg" id="cfgDlg">
+  <div class="cfg-hd">
+    <h2>Configurações do evento</h2>
+    <button class="icon-btn" id="bCfgClose" title="Fechar" data-icon="x"></button>
+  </div>
+  <div class="cfg-bd">
+    <div class="cfg-sec">
+      <span class="eyebrow">Identificação</span>
+      <div class="fgrid">
+        <label for="cOrg">Organização</label>
+        <input class="inp" id="cOrg" placeholder="ex.: Sesc Acre">
+        <label for="cName">Nome do evento</label>
+        <input class="inp" id="cName" placeholder="ex.: Seminário de Cultura 2026">
+        <label for="cTag">Subtítulo</label>
+        <input class="inp" id="cTag" placeholder="ex.: Auditório principal">
+        <label for="cFoot">Rodapé</label>
+        <input class="inp" id="cFoot" placeholder="ex.: Rio Branco · Teatro">
+        <label for="cLogo">Logo da organização</label>
+        <div>
+          <div class="logo-row">
+            <img class="logo-prev" id="cLogoPrev" alt="Logo atual da organização" hidden>
+            <label class="btn" for="cLogo" data-icon="upload">Escolher imagem</label>
+            <input id="cLogo" type="file" accept="image/*" hidden>
+            <button class="btn danger" id="cLogoRm" type="button" hidden>Remover</button>
+          </div>
+          <div class="lbl">Aparece no canto superior esquerdo, ao lado do nome.</div>
+        </div>
+        <label for="cELogo">Logo do evento</label>
+        <div>
+          <div class="logo-row">
+            <img class="logo-prev" id="cELogoPrev" alt="Logo atual do evento" hidden>
+            <label class="btn" for="cELogo" data-icon="upload">Escolher imagem</label>
+            <input id="cELogo" type="file" accept="image/*" hidden>
+            <button class="btn danger" id="cELogoRm" type="button" hidden>Remover</button>
+          </div>
+          <div class="lbl">Aparece no canto superior direito. Prefira PNG com fundo transparente.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cfg-sec">
+      <span class="eyebrow">Aparência</span>
+      <div class="fgrid">
+        <label for="cTheme">Tema</label>
+        <select class="inp" id="cTheme"></select>
+        <label>Cores</label>
+        <div class="colors" id="cColors"></div>
+        <label for="cFont">Fonte dos títulos</label>
+        <select class="inp" id="cFont"></select>
+      </div>
+    </div>
+
+    <div class="cfg-sec">
+      <span class="eyebrow">Comportamento</span>
+      <div class="fgrid">
+        <label for="cWarn">Aviso de reta final</label>
+        <div class="logo-row"><input class="inp num" id="cWarn" type="number" min="0"> <span class="lbl">segundos antes do fim (fica laranja)</span></div>
+        <label>Exibir na tela</label>
+        <div class="checks">
+          <label><input type="checkbox" id="c-showClock"> Data e hora (rodapé)</label>
+          <label><input type="checkbox" id="c-showBar"> Barra de progresso</label>
+        </div>
+        <label>Ao zerar</label>
+        <div class="checks">
+          <label><input type="checkbox" id="c-flash"> Piscar a tela</label>
+          <label><input type="checkbox" id="c-sound"> Bipe (só no painel)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cfg-ft">
+    <div class="app-actions">
+      <button class="btn" id="bExport" type="button" data-icon="download">Exportar evento</button>
+      <button class="btn" id="bImport" type="button" data-icon="upload">Importar evento</button>
+      <input id="fImport" type="file" accept=".json,application/json" hidden>
+    </div>
+    <button class="btn primary" id="bCfgDone" type="button">Concluir</button>
+  </div>
+</dialog>
+
+<script src="js/utils.js"></script>
+<script src="js/config.js"></script>
+<script src="js/estado.js"></script>
+<script src="js/tela.js"></script>
+<script src="js/painel.js"></script>
+</body>
+</html>

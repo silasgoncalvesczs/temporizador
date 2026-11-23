@@ -1,0 +1,91 @@
+/* =========================================================
+   Tela do cronômetro (prévia no painel e tela do palestrante)
+   Todas as medidas usam unidades de contêiner (cqw/cqh), então
+   a prévia e a tela cheia ficam com as mesmas proporções.
+   As cores --s-* vêm das configurações do evento (js/tela.js).
+   ========================================================= */
+
+.scr-host{container-type:size;position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden}
+
+.scr{
+  --s-bg:#0e0f12;--s-bg2:#1c1f26;--s-text:#f4f5f7;--s-muted:#8b919c;--s-time:#ffffff;--s-acc:#f5b301;--s-acc-tx:#111;
+  --s-ok:#22c55e;--s-warn:#f59e0b;--s-over:#ef4444;
+  --s-title:var(--f-inter);
+  position:absolute;inset:0;overflow:hidden;isolation:isolate;
+  display:flex;flex-direction:column;
+  padding:5cqh 4.5cqw 4cqh;
+  color:var(--s-text);font-family:var(--f-inter);
+  background:radial-gradient(120% 95% at 50% 0%,var(--s-bg2) 0%,var(--s-bg) 72%);
+}
+.scr.f-outfit{--s-title:var(--f-outfit)}
+.scr.f-serif{--s-title:var(--f-serif)}
+
+/* Faixa de destaque no topo */
+.scr::before{content:"";position:absolute;left:0;right:0;top:0;height:.8cqh;background:var(--s-acc);z-index:3}
+/* Camada usada no alerta de tempo esgotado */
+.scr::after{content:"";position:absolute;inset:0;background:var(--s-over);opacity:0;pointer-events:none;z-index:1}
+.scr>*{position:relative;z-index:2}
+
+/* ---------- Cabeçalho: marca + relógio ---------- */
+.scr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:3cqw;min-height:9cqh}
+.scr-brand{display:flex;align-items:center;gap:2.2cqw;min-width:0}
+.scr-logo{height:10cqh;max-width:22cqw;object-fit:contain;flex:none}
+.scr-brand-tx{min-width:0;line-height:1.15}
+.scr-org{font-size:2.3cqh;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--s-acc)}
+.scr-event{font-family:var(--s-title);font-size:4.4cqh;font-weight:600;color:var(--s-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scr.f-serif .scr-event{font-weight:700}
+.scr-tag{font-size:2.3cqh;color:var(--s-muted)}
+.scr-elogo{height:12cqh;max-width:28cqw;object-fit:contain;object-position:right center;flex:none}
+
+/* ---------- Centro: nome, tempo, progresso, status ---------- */
+.scr-mid{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1.8cqh}
+.scr-name{font-family:var(--s-title);font-size:min(7cqh,5.2cqw);font-weight:600;line-height:1.1;max-width:90cqw;color:var(--s-text)}
+.scr.f-serif .scr-name{font-weight:700}
+.scr-time{font-size:min(36cqh,25cqw);font-weight:600;line-height:.95;letter-spacing:-.02em;color:var(--s-time);
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;transition:color .3s}
+.scr-progress{width:min(72cqw,128cqh);height:1.1cqh;border-radius:99px;overflow:hidden;
+  background:color-mix(in srgb,var(--s-text) 14%,transparent)}
+.scr-bar{height:100%;width:100%;border-radius:inherit;background:var(--s-ok);transition:width .3s linear,background-color .3s}
+.scr-status{display:inline-flex;align-items:center;gap:1.1cqh;font-size:2.4cqh;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--s-muted)}
+.scr-status .dot{width:1.4cqh;height:1.4cqh;border-radius:50%;background:currentColor}
+
+.scr.is-running .scr-status{color:var(--s-ok)}
+.scr.is-running .scr-status .dot{animation:scr-pulse 1.6s ease-in-out infinite}
+.scr.is-warn .scr-time,.scr.is-warn .scr-status{color:var(--s-warn)}
+.scr.is-warn .scr-bar{background:var(--s-warn)}
+.scr.is-over .scr-time,.scr.is-over .scr-status{color:var(--s-over)}
+.scr.is-over .scr-bar{background:var(--s-over)}
+.scr.no-bar .scr-progress{visibility:hidden}
+
+/* ---------- Mensagem ao palestrante ---------- */
+.scr-msg{align-self:center;max-width:88cqw;margin-bottom:2.5cqh;display:flex;align-items:center;gap:2cqw;
+  padding:1.8cqh 3cqw;border-radius:1.6cqh;background:var(--s-acc);color:var(--s-acc-tx);
+  box-shadow:0 1.5cqh 5cqh rgba(0,0,0,.35)}
+.scr-msg-lbl{font-size:2cqh;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.75;flex:none}
+.scr-msg-tx{font-size:min(6.2cqh,4.4cqw);font-weight:600;line-height:1.15}
+
+/* ---------- Rodapé: informação do evento (esq.) + data e hora (dir.) ---------- */
+.scr-foot{display:flex;align-items:center;justify-content:space-between;gap:3cqw;font-size:2.6cqh;color:var(--s-muted);
+  border-top:1px solid color-mix(in srgb,var(--s-text) 12%,transparent);padding-top:2cqh}
+.scr-info{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scr-clock{display:flex;align-items:baseline;gap:1.6cqw;margin-left:auto;flex:none}
+.scr-date{color:var(--s-muted)}
+.scr-hour{font-size:1.5em;font-weight:600;color:var(--s-text);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+/* ---------- Animações ---------- */
+.scr.flash::after{animation:scr-flash .5s ease-in-out 6 alternate}
+.scr-msg.pop{animation:scr-pop .6s ease 3}
+@keyframes scr-flash{to{opacity:.4}}
+@keyframes scr-pop{50%{transform:scale(1.05)}}
+@keyframes scr-pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.scr *,.scr::after{animation:none!important;transition:none!important}}
+
+/* ---------- Tela cheia ---------- */
+.scr-host:fullscreen{aspect-ratio:auto;width:100vw;height:100vh}
+.scr-host.idle{cursor:none}
+
+/* ---------- Página tela.html (tela do palestrante) ---------- */
+body.palestrante{background:#000;overflow:hidden}
+body.palestrante .scr-host{aspect-ratio:auto;width:100vw;height:100vh;cursor:pointer}
+body.palestrante .scr-host.idle{cursor:none}

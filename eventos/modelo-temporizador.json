@@ -1,0 +1,24 @@
+{
+  "app": "temporizador-eventos",
+  "version": 3,
+  "cfg": {
+    "org": "Empresa",
+    "name": "Amazônia",
+    "tagline": "Amazônias",
+    "footer": "CODSTEC Acre",
+    "logo": "",
+    "eventLogo": "",
+    "theme": "floresta",
+    "font": "serif",
+    "warnSec": 60,
+    "showClock": true,
+    "showBar": true,
+    "flash": true,
+    "sound": false
+  },
+  "timers": [
+    { "name": "Abertura", "dur": 300 },
+    { "name": "Palestra principal", "dur": 1200 },
+    { "name": "Perguntas e respostas", "dur": 600 }
+  ]
+}
